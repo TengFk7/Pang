@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Together — ดูหนังด้วยกัน</title>
+    <meta name="description" content="Watch YouTube videos together in real-time with synchronized playback and video call">
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="controls">
+            <div class="search-container">
+                <div class="search-input-wrap">
+                    <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="searchInput" placeholder="ค้นหาวิดีโอ YouTube หรือวาง URL...">
+                    <button id="searchBtn" class="btn-search">
+                        <span id="searchBtnText">ค้นหา</span>
+                        <span id="searchSpinner" class="spinner hidden"></span>
+                    </button>
+                </div>
+                <div id="searchResults" class="search-results hidden"></div>
+            </div>
+
+            <div class="room-section">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">กำลังเชื่อมต่อ...</span>
+                </div>
+                <div class="room-badge" id="roomBadge">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    <span id="userCount">1</span>
+                    <span class="room-divider">|</span>
+                    <span id="roomIdDisplay"></span>
+                    <button id="copyRoomBtn" class="btn-icon" title="คัดลอกลิงก์ห้อง">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Panel: YouTube Player -->
+        <div class="video-panel">
+            <div id="playerWrapper" class="player-wrapper">
+                <div id="player"></div>
+                <!-- Loading Overlay -->
+                <div id="playerLoading" class="player-loading">
+                    <div class="loading-pulse"></div>
+                    <span>กำลังโหลดวิดีโอ...</span>
+                </div>
+                <!-- Fullscreen Bottom Bar -->
+                <div id="fsBottomBar" class="fs-bottom-bar">
+                    <div class="fs-bar-inner">
+                        <div class="fs-partner">
+                            <video id="fsRemoteVideo" autoplay playsinline></video>
+                            <span class="fs-partner-label">💕 แฟน</span>
+                        </div>
+                        <div class="fs-controls">
+                            <button id="fsMicBtn" class="fs-ctrl-btn active" title="ปิด/เปิดไมค์">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                            </button>
+                            <button id="fsCamBtn" class="fs-ctrl-btn active" title="ปิด/เปิดกล้อง">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            </button>
+                            <div class="fs-volume">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                                <input type="range" id="fsVolumeSlider" min="0" max="100" value="80" class="slider-range fs-slider">
+                            </div>
+                            <button id="fsExitBtn" class="fs-ctrl-btn" title="ออกจากเต็มจอ">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Video Queue Bar -->
+            <div class="queue-bar" id="queueBar">
+                <div class="queue-header">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <span>คิวเพลง (<span id="queueCount">0</span>)</span>
+                    <button id="toggleQueueBtn" class="btn-icon-sm">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                </div>
+                <div class="queue-list hidden" id="queueList"></div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Call + Chat -->
+        <div class="call-panel">
+            <!-- Video Streams -->
+            <div class="streams-section">
+                <div class="video-wrapper remote-video" id="remoteVideoWrapper">
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <div class="label">💕 แฟน</div>
+                    <div class="no-video-placeholder" id="remotePlaceholder">
+                        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>รอแฟนเข้ามา...</span>
+                    </div>
+                </div>
+                <div class="video-wrapper local-video">
+                    <video id="localVideo" autoplay playsinline muted></video>
+                    <div class="label">คุณ</div>
+                </div>
+            </div>
+
+            <!-- Call Controls -->
+            <div class="call-controls">
+                <button id="toggleMicBtn" class="ctrl-btn active" title="ปิดไมค์">
+                    <svg id="micOnIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    <svg id="micOffIcon" class="hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/><path d="M17 16.95A7 7 0 015 12v-2m14 0v2c0 .87-.16 1.71-.46 2.49"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </button>
+                <button id="toggleCamBtn" class="ctrl-btn active" title="ปิดกล้อง">
+                    <svg id="camOnIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    <svg id="camOffIcon" class="hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 7.5L23 7v10l-6.5-.5"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+                <button id="fullscreenBtn" class="ctrl-btn" title="เต็มจอ">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </button>
+                <div class="volume-control">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="80" class="slider-range">
+                </div>
+            </div>
+
+            <!-- Chat Section -->
+            <div class="chat-section">
+                <div class="chat-header">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    <span>แชท</span>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-empty">
+                        <span>💬 เริ่มพูดคุยกันเลย!</span>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="พิมพ์ข้อความ..." maxlength="500">
+                    <button id="sendChatBtn" class="btn-send" title="ส่ง">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "watch-together",
+  "version": "1.0.0",
+  "description": "Watch together and video call app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "yt-search": "^2.13.1"
+  }
+}

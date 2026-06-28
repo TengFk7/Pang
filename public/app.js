@@ -33,7 +33,7 @@ function showToast(message, type = 'info', duration = 3500) {
 // ==========================================
 const roomId = window.location.pathname.split('/').pop();
 document.getElementById('roomIdDisplay').innerText = roomId;
-socket.emit('join-room', roomId);
+// join-room is called inside startMedia() to prevent camera sync issues
 
 // Connection Status
 const statusDot = document.getElementById('statusDot');
@@ -415,6 +415,10 @@ async function startMedia() {
         } else {
             showToast('ไม่สามารถเปิดกล้อง/ไมค์ได้', 'error');
         }
+    } finally {
+        // Join room ONLY after camera is ready or permission is resolved
+        // This fixes the bug where the other person doesn't see the camera
+        socket.emit('join-room', roomId);
     }
 }
 

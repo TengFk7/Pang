@@ -986,6 +986,163 @@ body {
 .btn-send:active { transform: scale(0.95); }
 
 /* ==========================================
+   REACTIONS & TYPING INDICATOR
+   ========================================== */
+.reaction-bar {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.btn-reaction {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: transform var(--transition-fast), background var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-reaction:hover {
+    transform: scale(1.15);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-reaction:active {
+    transform: scale(0.9);
+}
+
+.floating-emoji {
+    position: absolute;
+    bottom: 50px;
+    right: 20px;
+    font-size: 2rem;
+    pointer-events: none;
+    z-index: 15;
+    animation: floatUp 2s ease-out forwards;
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(0) scale(0.5) rotate(-10deg); opacity: 0; }
+    20% { transform: translateY(-20px) scale(1.2) rotate(10deg); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(-150px) scale(1) rotate(-10deg); opacity: 0; }
+}
+
+.typing-indicator {
+    padding: 0 14px 6px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.typing-indicator span {
+    animation: typingDot 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingDot {
+    0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+.btn-theater {
+    background: rgba(230, 57, 70, 0.2);
+    border: 1px solid rgba(230, 57, 70, 0.5);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    color: var(--accent);
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-theater:hover {
+    transform: scale(1.15);
+    background: rgba(230, 57, 70, 0.4);
+    color: white;
+}
+
+.btn-theater:active {
+    transform: scale(0.9);
+}
+
+.btn-theater.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+}
+
+.reaction-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 4px;
+    align-self: center;
+}
+
+/* ==========================================
+   THEATER MODE (Ambient Glow)
+   ========================================== */
+body.theater-mode {
+    background-color: #000;
+}
+
+body.theater-mode .top-bar,
+body.theater-mode .call-panel,
+body.theater-mode .queue-bar {
+    opacity: 0.05;
+    transition: opacity 0.5s ease;
+}
+
+body.theater-mode .top-bar:hover,
+body.theater-mode .call-panel:hover,
+body.theater-mode .queue-bar:hover {
+    opacity: 1;
+}
+
+/* Ambient Glow */
+body.theater-mode .player-wrapper::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background: radial-gradient(circle, rgba(230, 57, 70, 0.25) 0%, rgba(138, 43, 226, 0.15) 40%, rgba(0, 0, 0, 0) 70%);
+    z-index: 1;
+    filter: blur(40px);
+    animation: ambientPulse 4s infinite alternate ease-in-out;
+    pointer-events: none;
+}
+
+body.theater-mode #player {
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+}
+
+@keyframes ambientPulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    100% { transform: scale(1.05); opacity: 1; }
+}
+
+/* ==========================================
    RESPONSIVE
    ========================================== */
 @media (max-width: 1100px) {

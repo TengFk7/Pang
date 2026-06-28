@@ -170,6 +170,37 @@ io.on('connection', (socket) => {
             socket.to(roomId).emit('video-seek', time);
         });
 
+        socket.on('video-ended', (videoId) => {
+            const state = getRoomState(roomId);
+            if (state.videoId === videoId) {
+                if (state.queue.length > 0) {
+                    const nextVideo = state.queue.shift();
+                    state.videoId = nextVideo.videoId;
+                    state.currentTime = 0;
+                    state.playing = true;
+                    state.lastUpdate = Date.now();
+                    io.to(roomId).emit('video-load', nextVideo.videoId);
+                    io.to(roomId).emit('queue-update', state.queue);
+                } else {
+                    state.playing = false;
+                }
+            }
+        });
+
+        socket.on('check-sync', (clientTime) => {
+            const state = getRoomState(roomId);
+            if (state.playing) {
+                const expectedTime = state.currentTime + (Date.now() - state.lastUpdate) / 1000;
+                if (Math.abs(expectedTime - clientTime) > 2) {
+                    socket.emit('force-sync', expectedTime);
+                }
+            }
+        });
+
+        socket.on('reaction', (emoji) => {
+            io.to(roomId).emit('reaction', { emoji: emoji, senderId: socket.id });
+        });
+
         // =====================
         // Chat
         // =====================
@@ -180,6 +211,14 @@ io.on('connection', (socket) => {
                 senderId: socket.id,
                 timestamp: Date.now()
             });
+        });
+
+        socket.on('typing', (name) => {
+            socket.to(roomId).emit('typing', name);
+        });
+
+        socket.on('stop-typing', () => {
+            socket.to(roomId).emit('stop-typing');
         });
 
         // =====================

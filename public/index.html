@@ -80,6 +80,19 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Reaction Buttons & Theater Mode -->
+                <div class="reaction-bar">
+                    <button id="theaterModeBtn" class="btn-theater" title="โหมดโรงหนัง (ปิดไฟ)">
+                        <svg id="theaterOffIcon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21h6"/><path d="M10 21v-4"/><path d="M14 21v-4"/><path d="M12 17c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/><path d="M12 2L12 5"/><path d="M12 19L12 22"/><path d="M4 12L1 12"/><path d="M23 12L20 12"/><path d="M4.9 4.9L7 7"/><path d="M17 17L19.1 19.1"/><path d="M19.1 4.9L17 7"/><path d="M7 17L4.9 19.1"/></svg>
+                        <svg id="theaterOnIcon" class="hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21h6"/><path d="M10 21v-4"/><path d="M14 21v-4"/><path d="M12 17c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/></svg>
+                    </button>
+                    <div class="reaction-divider"></div>
+                    <button class="btn-reaction" data-emoji="❤️">❤️</button>
+                    <button class="btn-reaction" data-emoji="😂">😂</button>
+                    <button class="btn-reaction" data-emoji="😲">😲</button>
+                    <button class="btn-reaction" data-emoji="👍">👍</button>
+                </div>
             </div>
             <!-- Video Queue Bar -->
             <div class="queue-bar" id="queueBar">
@@ -142,6 +155,7 @@
                         <span>💬 เริ่มพูดคุยกันเลย!</span>
                     </div>
                 </div>
+                <div id="typingIndicator" class="typing-indicator hidden">แฟนกำลังพิมพ์<span>.</span><span>.</span><span>.</span></div>
                 <div class="chat-input-area">
                     <input type="text" id="chatInput" placeholder="พิมพ์ข้อความ..." maxlength="500">
                     <button id="sendChatBtn" class="btn-send" title="ส่ง">

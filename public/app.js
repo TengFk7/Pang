@@ -133,6 +133,12 @@ function onPlayerStateChange(event) {
         case YT.PlayerState.PAUSED:
             socket.emit('video-pause', time);
             break;
+        case YT.PlayerState.ENDED:
+            const videoData = player.getVideoData();
+            if (videoData && videoData.video_id) {
+                socket.emit('video-ended', videoData.video_id);
+            }
+            break;
     }
 }
 
@@ -164,6 +170,16 @@ setInterval(() => {
         }
     } catch (e) { /* player not ready */ }
 }, 500);
+
+// Auto-Sync on Buffer heartbeat
+setInterval(() => {
+    if (!player || !playerReady || isSyncing) return;
+    try {
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+            socket.emit('check-sync', player.getCurrentTime());
+        }
+    } catch (e) {}
+}, 5000);
 
 // ==========================================
 // SEARCH
@@ -363,6 +379,18 @@ socket.on('sync-state', (state) => {
     }
 
     setTimeout(() => isSyncing = false, 1000);
+});
+
+socket.on('force-sync', (expectedTime) => {
+    if (player && playerReady) {
+        isSyncing = true;
+        player.seekTo(expectedTime, true);
+        if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
+            player.playVideo();
+        }
+        showToast('ซิงค์เวลาวิดีโอใหม่...', 'info', 1500);
+        setTimeout(() => isSyncing = false, 800);
+    }
 });
 
 // ==========================================
@@ -807,6 +835,81 @@ function updateQueueUI(queue) {
         });
 
         queueList.appendChild(item);
+    });
+    });
+}
+
+// ==========================================
+// 6. REACTIONS
+// ==========================================
+document.querySelectorAll('.btn-reaction').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const emoji = btn.getAttribute('data-emoji');
+        socket.emit('reaction', emoji);
+    });
+});
+
+socket.on('reaction', (data) => {
+    const wrapper = document.getElementById('playerWrapper');
+    const emojiEl = document.createElement('div');
+    emojiEl.className = 'floating-emoji';
+    emojiEl.innerText = data.emoji;
+    
+    const randomOffset = Math.random() * 40 - 20;
+    emojiEl.style.marginRight = `${randomOffset}px`;
+    
+    wrapper.appendChild(emojiEl);
+    
+    setTimeout(() => {
+        emojiEl.remove();
+    }, 2000);
+});
+
+// ==========================================
+// 7. TYPING INDICATOR
+// ==========================================
+const typingIndicator = document.getElementById('typingIndicator');
+let typingTimeout = null;
+let isTyping = false;
+
+chatInput.addEventListener('input', () => {
+    if (!isTyping) {
+        isTyping = true;
+        socket.emit('typing', myName);
+    }
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        isTyping = false;
+        socket.emit('stop-typing');
+    }, 1500);
+});
+
+socket.on('typing', (name) => {
+    if (typingIndicator) typingIndicator.classList.remove('hidden');
+});
+
+socket.on('stop-typing', () => {
+    if (typingIndicator) typingIndicator.classList.add('hidden');
+});
+
+// ==========================================
+// 8. THEATER MODE
+// ==========================================
+const theaterModeBtn = document.getElementById('theaterModeBtn');
+const theaterOnIcon = document.getElementById('theaterOnIcon');
+const theaterOffIcon = document.getElementById('theaterOffIcon');
+let isTheaterMode = false;
+
+if (theaterModeBtn) {
+    theaterModeBtn.addEventListener('click', () => {
+        isTheaterMode = !isTheaterMode;
+        document.body.classList.toggle('theater-mode', isTheaterMode);
+        
+        theaterModeBtn.classList.toggle('active', isTheaterMode);
+        theaterOnIcon.classList.toggle('hidden', !isTheaterMode);
+        theaterOffIcon.classList.toggle('hidden', isTheaterMode);
+        
+        showToast(isTheaterMode ? 'เปิดโหมดโรงหนังแล้ว 🎬' : 'ปิดโหมดโรงหนังแล้ว', 'info', 1500);
     });
 }
 
